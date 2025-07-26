@@ -81,6 +81,7 @@ async function run() {
     // await client.connect();
 
     const usersCollections=client.db('Blood-Lagbe').collection('users');
+    const requestsCollections=client.db('Blood-Lagbe').collection('requests');
     
 
      const verifyAdmin = async (req, res, next) => {
@@ -123,6 +124,21 @@ async function run() {
     app.get("/users",verifyFirebaseToken,verifyAdmin,async(req,res)=>{
       const query={email : {$ne: req.decoded.email}}
       const result=await usersCollections.find(query).toArray()
+      res.send(result)
+    })
+
+
+    app.get("/total",verifyFirebaseToken,verifyFirebaseToken,async(req,res)=>{
+      const userCount=await usersCollections.countDocuments({role:"doner"})
+      res.send(userCount)
+    })
+
+
+
+    // request related api
+    app.post("/donation-requests",async(req,res)=>{
+      const newRequest=req.body;
+      const result=await requestsCollections.insertOne(newRequest);
       res.send(result)
     })
 
