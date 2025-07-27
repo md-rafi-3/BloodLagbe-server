@@ -127,6 +127,21 @@ async function run() {
       res.send(result)
     })
 
+    app.get("/all-users",async(req,res)=>{
+      const {bloodGroup,divisionName,districtName,upazilaName}=req.query;
+      console.log(bloodGroup,divisionName,districtName,upazilaName)
+       const query={status:"active"};
+
+       if(bloodGroup&&divisionName&&districtName&&upazilaName){
+        query.bloodGroup= { $regex: bloodGroup, $options: "i" };
+        query.division= { $regex: divisionName, $options: "i" };
+        query.district= { $regex: districtName, $options: "i" };
+        query.upazila= { $regex: upazilaName, $options: "i" };
+       }
+       const result=await usersCollections.find(query).toArray()
+       res.send(result)
+    })
+
 
     app.get("/total",verifyFirebaseToken,verifyFirebaseToken,async(req,res)=>{
       const userCount=await usersCollections.countDocuments({role:"doner"})
@@ -139,6 +154,15 @@ async function run() {
     app.post("/donation-requests",async(req,res)=>{
       const newRequest=req.body;
       const result=await requestsCollections.insertOne(newRequest);
+      res.send(result)
+    })
+
+
+
+    app.get("/my-requests",verifyFirebaseToken,async(req,res)=>{
+      const email=req.decoded.email;
+      const query={requesterEmail: email}
+      const result=await requestsCollections.find(query).toArray();
       res.send(result)
     })
 
