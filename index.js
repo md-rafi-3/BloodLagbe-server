@@ -1,15 +1,26 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
+require('dotenv').config()
 const admin = require("firebase-admin");
 const serviceAccount = require("./SDK_KEY.json");
+const Stripe = require("stripe");
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 const port =process.env.PORT|| 3000;
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const { Query } = require('firebase-admin/firestore');
-require('dotenv').config()
+
+
+
+console.log("Stripe key is:", process.env.STRIPE_SECRET_KEY); 
 
 // Middleware
-app.use(cors());
+app.use(cors(
+  {
+     origin: "http://localhost:5173", 
+     credentials: true
+  }
+));
 app.use(express.json());
 
 
@@ -83,6 +94,7 @@ async function run() {
 
     const usersCollections=client.db('Blood-Lagbe').collection('users');
     const requestsCollections=client.db('Blood-Lagbe').collection('requests');
+    const fundingsCollection = client.db('Blood-Lagbe').collection('fundings');
     
 
      const verifyAdmin = async (req, res, next) => {
@@ -112,6 +124,34 @@ async function run() {
         }
         
     })
+
+
+    // stripe
+    app.post("/create-payment-intent",async (req, res) => {
+  const { amount } = req.body;
+
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: amount * 100, // convert to cents
+    currency: "usd",
+    payment_method_types: ["card"],
+  });
+
+  res.send({
+    clientSecret: paymentIntent.client_secret,
+  });
+});
+
+// end stripe
+
+// add funding api
+
+app.post("/add-funding",async(req,res)=>{
+  const newFund=req.body;
+  console.log(newFund)
+  const result=await fundingsCollection.insertOne(newFund);
+  res.send(result)
+})
+// add funding api end
 
     app.get("/users-role",verifyFirebaseToken,async(req,res)=>{
       const email=req.decoded.email;
