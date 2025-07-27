@@ -5,6 +5,7 @@ const admin = require("firebase-admin");
 const serviceAccount = require("./SDK_KEY.json");
 const port =process.env.PORT|| 3000;
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { Query } = require('firebase-admin/firestore');
 require('dotenv').config()
 
 // Middleware
@@ -122,9 +123,11 @@ async function run() {
 
 
     app.get("/users",verifyFirebaseToken,verifyAdmin,async(req,res)=>{
+      const {page}=req.query;
       const query={email : {$ne: req.decoded.email}}
-      const result=await usersCollections.find(query).toArray()
-      res.send(result)
+      const totalCount=await usersCollections.countDocuments(query)
+      const result=await usersCollections.find(query).skip((page-1)*5).limit(5).toArray()
+      res.send({result,totalCount})
     })
 
     app.get("/all-users",async(req,res)=>{
@@ -163,6 +166,13 @@ async function run() {
       const email=req.decoded.email;
       const query={requesterEmail: email}
       const result=await requestsCollections.find(query).toArray();
+      res.send(result)
+    })
+
+
+    app.get("/all-requests",async(req,res)=>{
+     const query={status:"pending"}
+      const result=await requestsCollections.find(query).toArray()
       res.send(result)
     })
 
