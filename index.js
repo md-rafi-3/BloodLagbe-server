@@ -151,6 +151,15 @@ app.post("/add-funding",async(req,res)=>{
   const result=await fundingsCollection.insertOne(newFund);
   res.send(result)
 })
+
+
+
+app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
+   const {page}=req.query;
+   const totalCount=await fundingsCollection.countDocuments()
+  const result=await fundingsCollection.find().skip((page-1)*10).limit(10).toArray()
+  res.send({result,totalCount})
+})
 // add funding api end
 
     app.get("/users-role",verifyFirebaseToken,async(req,res)=>{
