@@ -288,7 +288,10 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
 
 
 
-   
+   app.get("/all-blogs",verifyFirebaseToken,async(req,res)=>{
+    const result = await blogsCollection.find().toArray()
+    res.send(result)
+   })
 
 
 
