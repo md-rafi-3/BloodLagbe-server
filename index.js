@@ -211,8 +211,31 @@ app.post("/add-funding",async(req,res)=>{
 
 
     app.get("/all-requests",async(req,res)=>{
+      const {page}=req.query;
+      console.log("page",page)
      const query={status:"pending"}
-      const result=await requestsCollections.find(query).toArray()
+     const totalCount=await requestsCollections.countDocuments(query)
+      const result=await requestsCollections.find(query).skip((page-1)*12).limit(12).toArray()
+      res.send({result,totalCount})
+    })
+
+    app.patch("/donate-status",async(req,res)=>{
+      const id=req.query.id;
+      const filter={_id:new ObjectId(id)}
+      const updateedDoc={
+        $set:{
+          status:"inprogress"
+        }
+      }
+      const result=await requestsCollections.updateOne(filter,updateedDoc);
+      res.send(result)
+    })
+
+    app.get("/requests-details/:id",verifyFirebaseToken,async(req,res)=>{
+      const id=req.params.id;
+      console.log("the post id is",id)
+      const query={_id:new ObjectId(id)}
+      const result=await requestsCollections.findOne(query);
       res.send(result)
     })
 
