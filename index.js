@@ -195,9 +195,24 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
     })
 
 
-    app.get("/total",verifyFirebaseToken,verifyFirebaseToken,async(req,res)=>{
-      const userCount=await usersCollections.countDocuments({role:"doner"})
-      res.send(userCount)
+    app.get("/total",verifyFirebaseToken,async(req,res)=>{
+      const totalUsers=await usersCollections.countDocuments({role:"donor"})
+
+      const totalRequests=await requestsCollections.countDocuments()
+
+      const total=await fundingsCollection.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalAmount: { $sum: "$amount" }
+        }
+      }
+    ]).toArray();
+
+     const totalFunding = total[0]?.totalAmount || 0;
+
+    console.log("total fund",totalFunding)
+      res.send({totalUsers,totalFunding,totalRequests})
     })
 
 
@@ -226,6 +241,11 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
      const totalCount=await requestsCollections.countDocuments(query)
       const result=await requestsCollections.find(query).skip((page-1)*12).limit(12).toArray()
       res.send({result,totalCount})
+    })
+
+    app.get("/all-blood-req",verifyFirebaseToken,verifyAdmin,async(req,res)=>{
+      const result=await requestsCollections.find().toArray()
+      res.send(result)
     })
 
     app.patch("/donate-status",async(req,res)=>{
