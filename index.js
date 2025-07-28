@@ -95,6 +95,7 @@ async function run() {
     const usersCollections=client.db('Blood-Lagbe').collection('users');
     const requestsCollections=client.db('Blood-Lagbe').collection('requests');
     const fundingsCollection = client.db('Blood-Lagbe').collection('fundings');
+    const blogsCollection = client.db('Blood-Lagbe').collection('blogs');
     
 
      const verifyAdmin = async (req, res, next) => {
@@ -157,7 +158,7 @@ app.post("/add-funding",async(req,res)=>{
 app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
    const {page}=req.query;
    const totalCount=await fundingsCollection.countDocuments()
-  const result=await fundingsCollection.find().skip((page-1)*10).limit(10).toArray()
+  const result=await fundingsCollection.find().skip((page-1)*5).limit(5).toArray()
   res.send({result,totalCount})
 })
 // add funding api end
@@ -172,8 +173,15 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
 
 
     app.get("/users",verifyFirebaseToken,verifyAdmin,async(req,res)=>{
-      const {page}=req.query;
+      const {page,status,name}=req.query;
       const query={email : {$ne: req.decoded.email}}
+      if(status){
+        query.status=status
+      }
+
+      if(name){
+         query.name= { $regex: name, $options: "i" }
+      }
       const totalCount=await usersCollections.countDocuments(query)
       const result=await usersCollections.find(query).skip((page-1)*5).limit(5).toArray()
       res.send({result,totalCount})
@@ -243,9 +251,11 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
       res.send({result,totalCount})
     })
 
-    app.get("/all-blood-req",verifyFirebaseToken,verifyAdmin,async(req,res)=>{
-      const result=await requestsCollections.find().toArray()
-      res.send(result)
+    app.get("/all-blood-req",verifyFirebaseToken,async(req,res)=>{
+      const {page}=req.query;
+      const totalCount=await requestsCollections.countDocuments()
+      const result=await requestsCollections.find().skip((page-1)*10).limit(10).toArray()
+      res.send({result,totalCount})
     })
 
     app.patch("/donate-status",async(req,res)=>{
@@ -268,6 +278,13 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
       res.send(result)
     })
 
+
+    // blog related api
+    app.post("/add-blog",async(req,res)=>{
+      const newBlog=req.body;
+      const result=await blogsCollection.insertOne(newBlog);
+      res.send(result)
+    })
 
 
 
