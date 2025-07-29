@@ -285,6 +285,14 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
       res.send(result)
     })
 
+    app.delete("/delete-request/:id",verifyFirebaseToken,async(req,res)=>{
+      const {id}=req.params;
+      console.log("deleted id",id)
+      const filter={_id: new ObjectId(id)};
+      const result=await requestsCollections.deleteOne(filter);
+      res.send(result)
+    })
+
 
     app.get("/all-requests",async(req,res)=>{
       const {page}=req.query;
@@ -322,6 +330,34 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
       console.log("the post id is",id)
       const query={_id:new ObjectId(id)}
       const result=await requestsCollections.findOne(query);
+      res.send(result)
+    })
+
+
+    app.put("/donation-requests/:id",verifyFirebaseToken,async(req,res)=>{
+      const id=req.params.id;
+      const updatedData=req.body;
+      const filter={_id: new ObjectId(id)};
+         const options = { upsert: true };
+      const updatedDoc={
+        $set:updatedData
+      }
+
+      const result=await requestsCollections.updateOne(filter,updatedDoc,options)
+      res.send(result)
+    })
+
+
+    app.patch("/update-req-status/:id",verifyFirebaseToken,async(req,res)=>{
+      const id=req.params.id;
+      const {status}=req.body;
+      const filter={_id: new ObjectId(id)};
+      const updatedDoc={
+        $set:{
+          status:status
+        }
+      }
+      const result= await requestsCollections.updateOne(filter,updatedDoc);
       res.send(result)
     })
 
