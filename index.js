@@ -12,12 +12,12 @@ const { Query } = require('firebase-admin/firestore');
 
 
 
-console.log("Stripe key is:", process.env.STRIPE_SECRET_KEY); 
+// console.log("Stripe key is:", process.env.STRIPE_SECRET_KEY); 
 
 // Middleware
 app.use(cors(
   {
-     origin: "http://localhost:5173", 
+     origin: "https://blood-lagbe-6aef7.web.app", 
      credentials: true
   }
 ));
@@ -49,7 +49,7 @@ admin.initializeApp({
 const verifyFirebaseToken=async(req,res,next)=>{
   
    const authHeader=req.headers?.authorization;
-   console.log(authHeader)
+  //  console.log(authHeader)
    
    if(!authHeader || !authHeader.startsWith('Bearer ')){
     return res.status(401).send({message: "Unauthorized Access"})
@@ -59,7 +59,7 @@ const verifyFirebaseToken=async(req,res,next)=>{
    
    
    const token=authHeader.split(" ")[1];
-   console.log(token)
+  //  console.log(token)
 
    
    if(!token){
@@ -74,7 +74,7 @@ const verifyFirebaseToken=async(req,res,next)=>{
    try{
     const decoded=await admin.auth().verifyIdToken(token)
     req.decoded=decoded;
-    console.log("decoded token",req.decoded.email)
+    // console.log("decoded token",req.decoded.email)
     next();
    }catch(error){
       return res.status(401).send({message: "Unauthorized Access"})
@@ -148,7 +148,7 @@ async function run() {
 
 app.post("/add-funding",async(req,res)=>{
   const newFund=req.body;
-  console.log(newFund)
+  // console.log(newFund)
   const result=await fundingsCollection.insertOne(newFund);
   res.send(result)
 })
@@ -165,7 +165,7 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
 
     app.get("/users-role",verifyFirebaseToken,async(req,res)=>{
       const email=req.decoded.email;
-      console.log("user role email",email)
+      // console.log("user role email",email)
       const query={email : email}
         const result=await usersCollections.findOne(query)
         res.send(result)
@@ -196,7 +196,7 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
     app.put("/user/profile",verifyFirebaseToken,async(req,res)=>{
       const email=req.decoded.email;
       const updatedData=req.body;
-      console.log(email,updatedData)
+      // console.log(email,updatedData)
        const options = { upsert: true };
       const filter={email:email}
       const updatedDoc={
@@ -209,7 +209,7 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
 
     app.get("/all-users",async(req,res)=>{
       const {bloodGroup,divisionName,districtName,upazilaName}=req.query;
-      console.log(bloodGroup,divisionName,districtName,upazilaName)
+      // console.log(bloodGroup,divisionName,districtName,upazilaName)
        const query={status:"active"};
 
        if(bloodGroup&&divisionName&&districtName&&upazilaName){
@@ -282,7 +282,7 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
 
      const totalFunding = total[0]?.totalAmount || 0;
 
-    console.log("total fund",totalFunding)
+    // console.log("total fund",totalFunding)
       res.send({totalUsers,totalFunding,totalRequests, activity})
     })
 
@@ -308,7 +308,7 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
 
     app.delete("/delete-request/:id",verifyFirebaseToken,async(req,res)=>{
       const {id}=req.params;
-      console.log("deleted id",id)
+      // console.log("deleted id",id)
       const filter={_id: new ObjectId(id)};
       const result=await requestsCollections.deleteOne(filter);
       res.send(result)
@@ -317,7 +317,7 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
 
     app.get("/all-requests",async(req,res)=>{
       const {page}=req.query;
-      console.log("page",page)
+      // console.log("page",page)
      const query={status:"pending"}
      const totalCount=await requestsCollections.countDocuments(query)
       const result=await requestsCollections.find(query).skip((page-1)*12).limit(12).toArray()
@@ -342,7 +342,7 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
     app.patch("/donate-status",async(req,res)=>{
       const id=req.query.id;
       const donor=req.body;
-      console.log("donor",donor)
+      // console.log("donor",donor)
       const filter={_id:new ObjectId(id)}
       const updateedDoc={
         $set:{
@@ -356,7 +356,7 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
 
     app.get("/requests-details/:id",verifyFirebaseToken,async(req,res)=>{
       const id=req.params.id;
-      console.log("the post id is",id)
+      // console.log("the post id is",id)
       const query={_id:new ObjectId(id)}
       const result=await requestsCollections.findOne(query);
       res.send(result)
@@ -478,7 +478,7 @@ run().catch(console.dir);
 
 app.get('/', (req, res) => {
   res.send('Server is running!');
-});
+}); 
 
 
 
