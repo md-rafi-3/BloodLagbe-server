@@ -172,6 +172,9 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
     })
 
 
+   
+
+
     app.get("/users",verifyFirebaseToken,verifyAdmin,async(req,res)=>{
       const {page,status,name}=req.query;
       const query={email : {$ne: req.decoded.email}}
@@ -200,6 +203,47 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
        }
        const result=await usersCollections.find(query).toArray()
        res.send(result)
+    })
+
+
+    // users blck unblock and role change
+    app.patch("/users/block/:id",verifyFirebaseToken,verifyAdmin,async(req,res)=>{
+      const id=req.params.id;
+      const filter={_id : new ObjectId(id)};
+      const updatedDoc={
+        $set:{
+          status:"blocked"
+        }
+      }
+      const result=await usersCollections.updateOne(filter,updatedDoc);
+      res.send(result)
+    })
+    // unblock
+    app.patch("/users/unblock/:id",verifyFirebaseToken,verifyAdmin,async(req,res)=>{
+      const id=req.params.id;
+      const filter={_id : new ObjectId(id)};
+      const updatedDoc={
+        $set:{
+          status:"unblock"
+        }
+      }
+      const result=await usersCollections.updateOne(filter,updatedDoc);
+      res.send(result)
+    })
+
+    // unblock
+    app.patch("/users/role/:id",verifyFirebaseToken,verifyAdmin,async(req,res)=>{
+      const id=req.params.id;
+      const {role}=req.body;
+
+      const filter={_id : new ObjectId(id)};
+      const updatedDoc={
+        $set:{
+          role:role
+        }
+      }
+      const result=await usersCollections.updateOne(filter,updatedDoc);
+      res.send(result)
     })
 
 
@@ -260,10 +304,13 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
 
     app.patch("/donate-status",async(req,res)=>{
       const id=req.query.id;
+      const donor=req.body;
+      console.log("donor",donor)
       const filter={_id:new ObjectId(id)}
       const updateedDoc={
         $set:{
-          status:"inprogress"
+          status:"inprogress",
+          donor:donor
         }
       }
       const result=await requestsCollections.updateOne(filter,updateedDoc);
