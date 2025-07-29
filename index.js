@@ -252,6 +252,8 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
 
       const totalRequests=await requestsCollections.countDocuments()
 
+      const activity=await requestsCollections.find().sort({createdAt:-1}).limit(3).toArray()
+
       const total=await fundingsCollection.aggregate([
       {
         $group: {
@@ -264,7 +266,7 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
      const totalFunding = total[0]?.totalAmount || 0;
 
     console.log("total fund",totalFunding)
-      res.send({totalUsers,totalFunding,totalRequests})
+      res.send({totalUsers,totalFunding,totalRequests, activity})
     })
 
 
