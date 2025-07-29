@@ -298,10 +298,12 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
 
 
     app.get("/my-requests",verifyFirebaseToken,async(req,res)=>{
+      const {page}=req.query;
       const email=req.decoded.email;
       const query={requesterEmail: email}
-      const result=await requestsCollections.find(query).toArray();
-      res.send(result)
+      const totalCount=await requestsCollections.countDocuments(query)
+      const result=await requestsCollections.find(query).skip((page-1)*10).limit(10).toArray();
+      res.send({result,totalCount})
     })
 
     app.delete("/delete-request/:id",verifyFirebaseToken,async(req,res)=>{
@@ -387,6 +389,17 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
       const result= await requestsCollections.updateOne(filter,updatedDoc);
       res.send(result)
     })
+
+
+    // donor api
+
+       app.get("/donor-rec",verifyFirebaseToken,async(req,res)=>{
+        const email=req.decoded.email;
+        const query={requesterEmail:email};
+        const result=await requestsCollections.find(query).sort({createdAt:-1}).limit(3).toArray()
+        res.send(result)
+       })  
+    // donor api end
 
 
     // blog related api
