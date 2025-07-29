@@ -306,9 +306,17 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
     })
 
     app.get("/all-blood-req",verifyFirebaseToken,async(req,res)=>{
-      const {page}=req.query;
+      const {page,status,text}=req.query;
+      const query={}
+      if(status){
+        query.status=status;
+      }
+      if(text){
+        query.recipientName= { $regex:text, $options: "i" };
+      }
+
       const totalCount=await requestsCollections.countDocuments()
-      const result=await requestsCollections.find().skip((page-1)*10).limit(10).toArray()
+      const result=await requestsCollections.find(query).skip((page-1)*10).limit(10).toArray()
       res.send({result,totalCount})
     })
 
@@ -378,6 +386,47 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
     res.send(result)
    })
 
+   app.delete("/blogs/:id",verifyFirebaseToken,verifyAdmin,async(req,res)=>{
+    const id=req.params.id;
+    const filter={_id: new ObjectId(id)};
+    const result=await blogsCollection.deleteOne(filter)
+    res.send(result)
+   })
+
+   app.patch("/blogs/status/:id",verifyFirebaseToken,verifyAdmin,async(req,res)=>{
+    const id=req.params.id;
+    const {status}=req.body;
+    const filter={_id: new ObjectId(id)}
+    const updatedDoc={
+      $set:{
+        status:status
+      }
+    }
+    const result =await blogsCollection.updateOne(filter,updatedDoc)
+    res.send(result)
+   })
+
+
+   app.get("/blog/:id",async(req,res)=>{
+    const {id}=req.params;
+    const query={_id:new ObjectId(id)}
+    const result =await blogsCollection.findOne(query)
+    res.send(result)
+   })
+   
+   app.put("/blogs/:id",verifyFirebaseToken,verifyAdmin,async(req,res)=>{
+    const {id}=req.params;
+    const updatedData=req.body;
+     delete updatedData._id;
+    const filter={_id :new ObjectId(id)};
+    const options = { upsert: true };
+      const updatedDoc={
+        $set:updatedData
+      }
+
+      const result=await blogsCollection.updateOne(filter,updatedDoc,options);
+      res.send(result)
+   })
 
 
 
