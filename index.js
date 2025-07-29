@@ -171,6 +171,8 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
         res.send(result)
     })
 
+    
+
 
    
 
@@ -188,6 +190,21 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
       const totalCount=await usersCollections.countDocuments(query)
       const result=await usersCollections.find(query).skip((page-1)*5).limit(5).toArray()
       res.send({result,totalCount})
+    })
+
+
+    app.put("/user/profile",verifyFirebaseToken,async(req,res)=>{
+      const email=req.decoded.email;
+      const updatedData=req.body;
+      console.log(email,updatedData)
+       const options = { upsert: true };
+      const filter={email:email}
+      const updatedDoc={
+        $set:updatedData
+      }
+      const result=await usersCollections.updateOne(filter,updatedDoc,options)
+      res.send(result)
+
     })
 
     app.get("/all-users",async(req,res)=>{
@@ -224,7 +241,7 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
       const filter={_id : new ObjectId(id)};
       const updatedDoc={
         $set:{
-          status:"unblock"
+          status:"active"
         }
       }
       const result=await usersCollections.updateOne(filter,updatedDoc);
@@ -383,6 +400,12 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
 
    app.get("/all-blogs",verifyFirebaseToken,async(req,res)=>{
     const result = await blogsCollection.find().toArray()
+    res.send(result)
+   })
+
+   app.get("/public-blogs",async(req,res)=>{
+    const query={status:"published"};
+    const result=await blogsCollection.find(query).toArray()
     res.send(result)
    })
 
