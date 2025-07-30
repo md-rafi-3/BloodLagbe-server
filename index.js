@@ -17,7 +17,7 @@ const { Query } = require('firebase-admin/firestore');
 // Middleware
 app.use(cors(
   {
-     origin: "https://blood-lagbe-6aef7.web.app", 
+     origin: "http://localhost:5173", 
      credentials: true
   }
 ));
@@ -412,7 +412,20 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
 
 
    app.get("/all-blogs",verifyFirebaseToken,async(req,res)=>{
-    const result = await blogsCollection.find().toArray()
+    const {statusFilter,searchText}=req.query;
+
+    // console.log("contant manage",searchText,statusFilter)
+
+    const query={}
+
+    if(statusFilter){
+      query.status=statusFilter
+    }
+
+    if(searchText){
+       query.title= { $regex:searchText, $options: "i" };
+    }
+    const result = await blogsCollection.find(query).toArray()
     res.send(result)
    })
 
