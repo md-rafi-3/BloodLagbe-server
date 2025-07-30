@@ -17,7 +17,7 @@ const { Query } = require('firebase-admin/firestore');
 // Middleware
 app.use(cors(
   {
-     origin: "http://localhost:5173", 
+     origin: "https://blood-lagbe-6aef7.web.app", 
      credentials: true
   }
 ));
