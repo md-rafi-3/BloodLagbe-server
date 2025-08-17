@@ -17,7 +17,7 @@ const { Query } = require('firebase-admin/firestore');
 // Middleware
 app.use(cors(
   {
-     origin: "https://blood-lagbe-6aef7.web.app", 
+     origin: "http://localhost:5173", 
      credentials: true
   }
 ));
@@ -269,7 +269,7 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
 
       const totalRequests=await requestsCollections.countDocuments()
 
-      const activity=await requestsCollections.find().sort({createdAt:-1}).limit(3).toArray()
+      // const activity=await requestsCollections.find().sort({createdAt:-1}).limit(3).toArray()
 
       const total=await fundingsCollection.aggregate([
       {
@@ -282,8 +282,11 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
 
      const totalFunding = total[0]?.totalAmount || 0;
 
+     const fundingData=await fundingsCollection.find().toArray()
+     const requestsData=await requestsCollections.find().toArray()
+
     // console.log("total fund",totalFunding)
-      res.send({totalUsers,totalFunding,totalRequests, activity})
+      res.send({totalUsers,totalFunding,totalRequests, fundingData,requestsData})
     })
 
 
