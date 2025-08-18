@@ -319,9 +319,19 @@ app.get("/funding-data",verifyFirebaseToken,async(req,res)=>{
 
 
     app.get("/all-requests",async(req,res)=>{
-      const {page}=req.query;
+      const {page,text,group}=req.query;
+      console.log("texts",text,group)
       // console.log("page",page)
      const query={status:"pending"}
+
+      if(group){
+        query.bloodGroup=group;
+      }
+      if(text){
+        query.recipientName= { $regex:text, $options: "i" };
+       
+      }
+
      const totalCount=await requestsCollections.countDocuments(query)
       const result=await requestsCollections.find(query).skip((page-1)*12).limit(12).toArray()
       res.send({result,totalCount})
